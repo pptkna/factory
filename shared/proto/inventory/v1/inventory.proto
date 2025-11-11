@@ -1,0 +1,151 @@
+syntax = "proto3";
+
+package inventory.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1;inventory_v1";
+
+service InventoryService {
+    rpc GetPart (GetPartRequest) returns (GetPartResponse);
+    rpc ListParts () returns ();
+}
+
+// Категория
+enum Category {
+    // Неизвестная категория (значение по умолчанию)
+    CATEGORY_UNSPECIFIED = 0;
+
+    // Неизвестная категория
+    CATEGORY_UNKNOWN = 1;
+
+    // Двигатель
+    CATEGORY_ENGINE = 2;
+
+    // Топливо
+    CATEGORY_FUEL = 3;
+
+    // Иллюминатор
+    CATEGORY_PORTHOLE = 4;
+
+    // Крыло
+    CATEGORY_WING = 5;
+}
+
+// Характеристики
+message Dimensions {
+    // Длина в см
+    double length = 1;
+
+    // Ширина в см
+    double width = 2;
+
+    // Высота в см
+    double height = 3;
+
+    // Вес в кг
+    double weight = 4;
+}
+
+// Информация о производители
+message Manufacturer {
+    // Название
+    string name = 1;
+
+    // Страна производства
+    string country = 2;
+
+    // Сайт производителя
+    string website = 3;
+}
+
+// Value (для metadata)
+message Value {
+    oneof kind {
+        string string_value = 1;
+        int64 int64_value = 2;
+        double double_value = 3;
+        bool bool_value = 4;
+    }
+}
+
+// Информация о детали
+message Part {
+    // Уникальный идентификатор детали
+    string uuid	= 1;
+
+    // Название детали
+    string name = 2;
+
+    // Описание детали
+    string description = 3;
+
+    // Цена за единицу
+    double price = 4;
+
+    // Количество на складе
+    int64 stock_quantity = 5;
+
+    // Категория
+    Category category = 6;
+
+    // Размеры детали
+    Dimensions dimensions = 7;
+
+    // Информация о производителе
+    Manufacturer manufacturer = 8;
+
+    // Теги для быстрого поиска
+    repeated string tags = 9;
+
+    // Гибкие метаданные
+    map<string, Value> metadata = 10;
+
+    // Дата создания
+    google.protobuf.Timestamp created_at = 11;
+
+    // Дата обновления
+    google.protobuf.Timestamp updated_at = 12;
+}
+
+// GetPartRequest запрос на получение информации о детали по её UUID
+message GetPartRequest {
+    // Идентификатор детали
+    string uuid = 1;
+}
+
+// GetPartResponse ответ с информацией о детали
+message GetPartResponse {
+    Part part = 1;
+}
+
+// Фильтры деталей
+message PartsFilter {
+    // Список UUID'ов. Пусто — не фильтруем по UUID
+    repeated string uuids = 1;
+    
+    // Список имён. Пусто — не фильтруем по имени
+    repeated string names = 2;
+
+    // Список категорий. Пусто — не фильтруем по категории
+    repeated Category categories = 3;
+
+    // Список стран производителей. Пусто — не фильтруем по стране
+    repeated string manufacturer_countries = 4;
+
+    // Список тегов. Пусто — не фильтруем по тегам
+    repeated string tags = 5;
+}
+
+// Запрос на получение списка деталей по фильтрам
+message ListPartsRequest {
+    // Фильтры
+    PartsFilter filter = 1;
+}
+
+// Отфильтрованный список деталей
+message ListPartsResponse {
+    // Список деталей
+    repeated Part parts = 1;
+}
