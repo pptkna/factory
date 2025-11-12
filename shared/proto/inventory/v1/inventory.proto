@@ -3,13 +3,12 @@ syntax = "proto3";
 package inventory.v1;
 
 import "google/protobuf/timestamp.proto";
-import "google/protobuf/struct.proto";
 
 option go_package = "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1;inventory_v1";
 
 service InventoryService {
     rpc GetPart (GetPartRequest) returns (GetPartResponse);
-    rpc ListParts () returns ();
+    rpc ListParts (ListPartsRequest) returns (ListPartsResponse);
 }
 
 // Категория
