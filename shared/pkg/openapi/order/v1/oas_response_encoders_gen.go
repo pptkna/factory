@@ -15,7 +15,7 @@ import (
 
 func encodeGetOrderByOrderUuidResponse(response GetOrderByOrderUuidRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
-	case *GetOrderResponse:
+	case *OrderDto:
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(200)
 		span.SetStatus(codes.Ok, http.StatusText(200))
@@ -202,6 +202,19 @@ func encodePostOrderPayResponse(response PostOrderPayRes, w http.ResponseWriter,
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(404)
 		span.SetStatus(codes.Error, http.StatusText(404))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *ConflictError:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(409)
+		span.SetStatus(codes.Error, http.StatusText(409))
 
 		e := new(jx.Encoder)
 		response.Encode(e)

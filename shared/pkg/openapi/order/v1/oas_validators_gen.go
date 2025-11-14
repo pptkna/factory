@@ -18,6 +18,14 @@ func (s *CreateOrderRequest) Validate() error {
 		if s.PartUuids == nil {
 			return errors.New("nil is invalid value")
 		}
+		if err := (validate.Array{
+			MinLength:    1,
+			MinLengthSet: true,
+			MaxLength:    0,
+			MaxLengthSet: false,
+		}).ValidateLength(len(s.PartUuids)); err != nil {
+			return errors.Wrap(err, "array")
+		}
 		return nil
 	}(); err != nil {
 		failures = append(failures, validate.FieldError{
@@ -54,7 +62,7 @@ func (s *CreateOrderResponse) Validate() error {
 	return nil
 }
 
-func (s *GetOrderResponse) Validate() error {
+func (s *OrderDto) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer
 	}
