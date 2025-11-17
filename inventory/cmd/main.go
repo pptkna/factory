@@ -11,7 +11,7 @@ import (
 	partApiV1 "github.com/pptkna/rocket-factory/inventory/internal/api/part/v1"
 	partRepository "github.com/pptkna/rocket-factory/inventory/internal/repository/part"
 	partService "github.com/pptkna/rocket-factory/inventory/internal/service/part"
-	inventory_v1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
+	inventoryV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
@@ -33,13 +33,13 @@ func main() {
 	// Создаем gRPC сервер
 	s := grpc.NewServer()
 
-	repo := partRepository.NewPartRepository()
+	repo := partRepository.NewRepository()
 
-	service := partService.NewPartService(repo)
+	service := partService.NewService(repo)
 
 	api := partApiV1.NewAPI(service)
 
-	inventory_v1.RegisterInventoryServiceServer(s, api)
+	inventoryV1.RegisterInventoryServiceServer(s, api)
 
 	// Включаем рефлексию для отладки
 	reflection.Register(s)

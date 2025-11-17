@@ -11,7 +11,7 @@ type service struct {
 	partRepository repository.PartRepository
 }
 
-func NewPartService(repository repository.PartRepository) *service {
+func NewService(repository repository.PartRepository) *service {
 	return &service{
 		partRepository: repository,
 	}

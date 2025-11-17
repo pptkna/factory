@@ -14,7 +14,7 @@ type repository struct {
 	parts map[string]repoModel.Part
 }
 
-func NewPartRepository() *repository {
+func NewRepository() *repository {
 	return &repository{
 		parts: make(map[string]repoModel.Part),
 	}
