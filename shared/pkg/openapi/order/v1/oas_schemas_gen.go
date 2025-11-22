@@ -74,6 +74,7 @@ func (s *ConflictError) SetMessage(val string) {
 
 func (*ConflictError) postOrderCancelRes() {}
 func (*ConflictError) postOrderPayRes()    {}
+func (*ConflictError) postOrderRes()       {}
 
 // Ref: #/components/schemas/create_order_request
 type CreateOrderRequest struct {

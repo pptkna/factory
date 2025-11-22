@@ -7,7 +7,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func PartsFilterToProto(partsFilter *inventoryV1.PartsFilter) model.PartFiters {
+func PartsFilterToModel(partsFilter *inventoryV1.PartsFilter) model.PartFiters {
 	if partsFilter == nil {
 		return model.PartFiters{}
 	}

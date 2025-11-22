@@ -7,6 +7,7 @@ import (
 	"net/url"
 
 	"github.com/go-faster/errors"
+	"github.com/google/uuid"
 
 	"github.com/ogen-go/ogen/conv"
 	"github.com/ogen-go/ogen/middleware"
@@ -18,7 +19,7 @@ import (
 // GetOrderByOrderUuidParams is parameters of GetOrderByOrderUuid operation.
 type GetOrderByOrderUuidParams struct {
 	// Uuid заказа.
-	OrderUUID string
+	OrderUUID uuid.UUID
 }
 
 func unpackGetOrderByOrderUuidParams(packed middleware.Parameters) (params GetOrderByOrderUuidParams) {
@@ -27,7 +28,7 @@ func unpackGetOrderByOrderUuidParams(packed middleware.Parameters) (params GetOr
 			Name: "order_uuid",
 			In:   "path",
 		}
-		params.OrderUUID = packed[key].(string)
+		params.OrderUUID = packed[key].(uuid.UUID)
 	}
 	return params
 }
@@ -57,28 +58,12 @@ func decodeGetOrderByOrderUuidParams(args [1]string, argsEscaped bool, r *http.R
 					return err
 				}
 
-				c, err := conv.ToString(val)
+				c, err := conv.ToUUID(val)
 				if err != nil {
 					return err
 				}
 
 				params.OrderUUID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:    1,
-					MinLengthSet: true,
-					MaxLength:    100,
-					MaxLengthSet: true,
-					Email:        false,
-					Hostname:     false,
-					Regex:        nil,
-				}).Validate(string(params.OrderUUID)); err != nil {
-					return errors.Wrap(err, "string")
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -100,7 +85,7 @@ func decodeGetOrderByOrderUuidParams(args [1]string, argsEscaped bool, r *http.R
 // PostOrderCancelParams is parameters of PostOrderCancel operation.
 type PostOrderCancelParams struct {
 	// Uuid заказа.
-	OrderUUID string
+	OrderUUID uuid.UUID
 }
 
 func unpackPostOrderCancelParams(packed middleware.Parameters) (params PostOrderCancelParams) {
@@ -109,7 +94,7 @@ func unpackPostOrderCancelParams(packed middleware.Parameters) (params PostOrder
 			Name: "order_uuid",
 			In:   "path",
 		}
-		params.OrderUUID = packed[key].(string)
+		params.OrderUUID = packed[key].(uuid.UUID)
 	}
 	return params
 }
@@ -139,28 +124,12 @@ func decodePostOrderCancelParams(args [1]string, argsEscaped bool, r *http.Reque
 					return err
 				}
 
-				c, err := conv.ToString(val)
+				c, err := conv.ToUUID(val)
 				if err != nil {
 					return err
 				}
 
 				params.OrderUUID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:    1,
-					MinLengthSet: true,
-					MaxLength:    100,
-					MaxLengthSet: true,
-					Email:        false,
-					Hostname:     false,
-					Regex:        nil,
-				}).Validate(string(params.OrderUUID)); err != nil {
-					return errors.Wrap(err, "string")
-				}
 				return nil
 			}(); err != nil {
 				return err
@@ -182,7 +151,7 @@ func decodePostOrderCancelParams(args [1]string, argsEscaped bool, r *http.Reque
 // PostOrderPayParams is parameters of PostOrderPay operation.
 type PostOrderPayParams struct {
 	// Uuid заказа.
-	OrderUUID string
+	OrderUUID uuid.UUID
 }
 
 func unpackPostOrderPayParams(packed middleware.Parameters) (params PostOrderPayParams) {
@@ -191,7 +160,7 @@ func unpackPostOrderPayParams(packed middleware.Parameters) (params PostOrderPay
 			Name: "order_uuid",
 			In:   "path",
 		}
-		params.OrderUUID = packed[key].(string)
+		params.OrderUUID = packed[key].(uuid.UUID)
 	}
 	return params
 }
@@ -221,28 +190,12 @@ func decodePostOrderPayParams(args [1]string, argsEscaped bool, r *http.Request)
 					return err
 				}
 
-				c, err := conv.ToString(val)
+				c, err := conv.ToUUID(val)
 				if err != nil {
 					return err
 				}
 
 				params.OrderUUID = c
-				return nil
-			}(); err != nil {
-				return err
-			}
-			if err := func() error {
-				if err := (validate.String{
-					MinLength:    1,
-					MinLengthSet: true,
-					MaxLength:    100,
-					MaxLengthSet: true,
-					Email:        false,
-					Hostname:     false,
-					Regex:        nil,
-				}).Validate(string(params.OrderUUID)); err != nil {
-					return errors.Wrap(err, "string")
-				}
 				return nil
 			}(); err != nil {
 				return err

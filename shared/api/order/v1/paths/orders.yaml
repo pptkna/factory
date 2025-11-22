@@ -22,6 +22,12 @@ post:
         application/json:
           schema:
             $ref: ../components/errors/not_found_error.yaml
+    '409':
+      description: Conflict
+      content:
+        application/json:
+          schema:
+            $ref: ../components/errors/conflict_error.yaml
     '400':
       description: Bad request - validation error
       content:
