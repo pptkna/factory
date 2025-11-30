@@ -11,7 +11,7 @@ import (
 )
 
 func (a *api) GetOrderByOrderUuid(ctx context.Context, params orderV1.GetOrderByOrderUuidParams) (orderV1.GetOrderByOrderUuidRes, error) {
-	order, err := a.service.GetOrderByOrderUuid(ctx, params.OrderUUID.String())
+	order, err := a.service.Get(ctx, params.OrderUUID.String())
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return &orderV1.NotFoundError{

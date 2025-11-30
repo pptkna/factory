@@ -8,8 +8,8 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
-func (s *service) PostOrderCancel(ctx context.Context, uuid string) error {
-	order, err := s.orderRepository.GetOrder(ctx, uuid)
+func (s *service) Cancel(ctx context.Context, uuid string) error {
+	order, err := s.orderRepository.Get(ctx, uuid)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return model.ErrNotFound
@@ -28,7 +28,7 @@ func (s *service) PostOrderCancel(ctx context.Context, uuid string) error {
 		Status:     model.OrderStatusCancelled,
 	}
 
-	err = s.orderRepository.UpdateOrder(ctx, newOrder)
+	err = s.orderRepository.Update(ctx, newOrder)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return model.ErrNotFound

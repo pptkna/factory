@@ -7,13 +7,12 @@ import (
 	repoConverter "github.com/pptkna/rocket-factory/order/internal/repository/converter"
 )
 
-func (r *repository) UpdateOrder(_ context.Context, orderDto model.OrderDto) error {
+func (r *repository) Create(_ context.Context, orderDto model.OrderDto) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	_, exists := r.orders[orderDto.OrderUUID]
-	if !exists {
-		return model.ErrNotFound
+	if _, exist := r.orders[orderDto.OrderUUID]; exist {
+		return model.ErrConflict
 	}
 
 	r.orders[orderDto.OrderUUID] = repoConverter.OrderDtoToRepoModel(orderDto)

@@ -8,7 +8,7 @@ import (
 	repoConverter "github.com/pptkna/rocket-factory/order/internal/repository/converter"
 )
 
-func (r *repository) GetOrder(_ context.Context, uuid string) (model.OrderDto, error) {
+func (r *repository) Get(_ context.Context, uuid string) (model.OrderDto, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

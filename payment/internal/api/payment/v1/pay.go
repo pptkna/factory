@@ -8,7 +8,7 @@ import (
 )
 
 func (a *api) PayOrder(ctx context.Context, req *paymentV1.PayOrderRequest) (*paymentV1.PayOrderResponse, error) {
-	res := a.paymentService.PayOrder(ctx, converter.PayOrderRequestToModel(req))
+	res := a.paymentService.Pay(ctx, converter.PayOrderRequestToModel(req))
 
 	return converter.PayOrderResponseToProto(res), nil
 }

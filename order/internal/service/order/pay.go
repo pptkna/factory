@@ -8,8 +8,8 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
-func (s *service) PostOrderPay(ctx context.Context, orderUuid string, paymentMethod model.PaymentMethod) (string, error) {
-	order, err := s.orderRepository.GetOrder(ctx, orderUuid)
+func (s *service) Pay(ctx context.Context, orderUuid string, paymentMethod model.PaymentMethod) (string, error) {
+	order, err := s.orderRepository.Get(ctx, orderUuid)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return "", model.ErrNotFound
@@ -35,7 +35,7 @@ func (s *service) PostOrderPay(ctx context.Context, orderUuid string, paymentMet
 		Status:          model.OrderStatusPaid,
 	}
 
-	err = s.orderRepository.UpdateOrder(ctx, newOrder)
+	err = s.orderRepository.Update(ctx, newOrder)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return "", model.ErrNotFound

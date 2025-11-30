@@ -8,7 +8,7 @@ import (
 	repoConverter "github.com/pptkna/rocket-factory/inventory/internal/repository/converter"
 )
 
-func (r *repository) ListParts(_ context.Context, filters model.PartFiters) ([]model.Part, error) {
+func (r *repository) GetList(_ context.Context, filters model.PartFiters) ([]model.Part, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

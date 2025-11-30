@@ -7,5 +7,5 @@ import (
 )
 
 type PaymentService interface {
-	PayOrder(context context.Context, PayOrderRequest model.PayOrderRequest) model.PayOrderResponse
+	Pay(context context.Context, PayOrderRequest model.PayOrderRequest) model.PayOrderResponse
 }

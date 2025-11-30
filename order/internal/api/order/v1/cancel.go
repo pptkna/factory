@@ -10,7 +10,7 @@ import (
 )
 
 func (a *api) PostOrderCancel(ctx context.Context, params orderV1.PostOrderCancelParams) (orderV1.PostOrderCancelRes, error) {
-	err := a.service.PostOrderCancel(ctx, params.OrderUUID.String())
+	err := a.service.Cancel(ctx, params.OrderUUID.String())
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return &orderV1.ConflictError{

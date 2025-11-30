@@ -9,7 +9,7 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
-func (s *service) PostOrder(ctx context.Context, req model.CreateOrderRequest) (model.OrderDto, error) {
+func (s *service) Create(ctx context.Context, req model.CreateOrderRequest) (model.OrderDto, error) {
 	parts, err := s.inventoryClient.ListParts(ctx, model.PartFiters{
 		Uuids: req.PartUuids,
 	})
@@ -35,7 +35,7 @@ func (s *service) PostOrder(ctx context.Context, req model.CreateOrderRequest) (
 		Status:     model.OrderStatusPendingPayment,
 	}
 
-	err = s.orderRepository.CreateOrder(ctx, order)
+	err = s.orderRepository.Create(ctx, order)
 	if err != nil {
 		if errors.Is(err, model.ErrConflict) {
 			return model.OrderDto{}, model.ErrConflict

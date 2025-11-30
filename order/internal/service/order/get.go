@@ -8,8 +8,8 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
-func (s *service) GetOrderByOrderUuid(ctx context.Context, uuid string) (model.OrderDto, error) {
-	order, err := s.orderRepository.GetOrder(ctx, uuid)
+func (s *service) Get(ctx context.Context, uuid string) (model.OrderDto, error) {
+	order, err := s.orderRepository.Get(ctx, uuid)
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return model.OrderDto{}, model.ErrNotFound

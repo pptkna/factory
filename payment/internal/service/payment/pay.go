@@ -8,7 +8,7 @@ import (
 	"github.com/pptkna/rocket-factory/payment/internal/model"
 )
 
-func (s *service) PayOrder(ctx context.Context, req model.PayOrderRequest) model.PayOrderResponse {
+func (s *service) Pay(ctx context.Context, req model.PayOrderRequest) model.PayOrderResponse {
 	transactionUuid := uuid.New().String()
 
 	log.Printf("Оплата прошла успешно, transaction_uuid: %s", transactionUuid)
