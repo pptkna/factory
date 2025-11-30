@@ -17,13 +17,13 @@ func (a *api) PostOrder(ctx context.Context, req *orderV1.CreateOrderRequest) (o
 		if errors.Is(err, model.ErrNotFound) {
 			return &orderV1.NotFoundError{
 				Code:    404,
-				Message: fmt.Sprintf("Not found, %w", err),
+				Message: fmt.Sprintln("Not found, %w", err),
 			}, nil
 		}
 		if errors.Is(err, model.ErrConflict) {
 			return &orderV1.ConflictError{
 				Code:    409,
-				Message: fmt.Sprintf("Not found, %w", err),
+				Message: fmt.Sprintln("Not found, %w", err),
 			}, nil
 		}
 		return &orderV1.InternalServerError{
