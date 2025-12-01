@@ -16,7 +16,9 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const grpcPort = 50051
+const (
+	grpcPort = 50051
+)
 
 func main() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
