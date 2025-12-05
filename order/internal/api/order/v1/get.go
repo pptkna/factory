@@ -24,6 +24,12 @@ func (a *api) GetOrderByOrderUuid(ctx context.Context, params orderV1.GetOrderBy
 			Message: "Internal server error",
 		}, nil
 	}
+	if nil == order {
+		return &orderV1.InternalServerError{
+			Code:    500,
+			Message: "Internal server error",
+		}, nil
+	}
 
 	parsedOrder, err := converter.OrderDtoToOrderV1(order)
 	if err != nil {

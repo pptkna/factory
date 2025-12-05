@@ -8,6 +8,7 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
+// TODO: Добавить транзакции
 func (s *service) Cancel(ctx context.Context, uuid string) error {
 	order, err := s.orderRepository.Get(ctx, uuid)
 	if err != nil {
@@ -20,7 +21,7 @@ func (s *service) Cancel(ctx context.Context, uuid string) error {
 		return model.ErrConflict
 	}
 
-	newOrder := model.OrderDto{
+	newOrder := &model.OrderDto{
 		OrderUUID:  order.OrderUUID,
 		UserUUID:   order.UserUUID,
 		PartUuids:  order.PartUuids,

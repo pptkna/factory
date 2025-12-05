@@ -60,19 +60,19 @@ func OrderStatusToModel(status orderV1.OrderStatus) model.OrderStatus {
 	}
 }
 
-func CreateOrderRequestToModel(req *orderV1.CreateOrderRequest) model.CreateOrderRequest {
+func CreateOrderRequestToModel(req *orderV1.CreateOrderRequest) *model.CreateOrderRequest {
 	partUuids := make([]string, len(req.PartUuids))
 	for i, u := range req.PartUuids {
 		partUuids[i] = u.String()
 	}
 
-	return model.CreateOrderRequest{
+	return &model.CreateOrderRequest{
 		UserUUID:  req.UserUUID.String(),
 		PartUuids: partUuids,
 	}
 }
 
-func OrderDtoToOrderV1(orderDto model.OrderDto) (*orderV1.OrderDto, error) {
+func OrderDtoToOrderV1(orderDto *model.OrderDto) (*orderV1.OrderDto, error) {
 	orderUuid, err := uuid.Parse(orderDto.OrderUUID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse orderUuid")

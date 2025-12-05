@@ -8,6 +8,7 @@ import (
 	"github.com/pptkna/rocket-factory/order/internal/model"
 )
 
+// TODO: Добавить транзакции
 func (s *service) Pay(ctx context.Context, orderUuid string, paymentMethod model.PaymentMethod) (string, error) {
 	order, err := s.orderRepository.Get(ctx, orderUuid)
 	if err != nil {
@@ -25,7 +26,7 @@ func (s *service) Pay(ctx context.Context, orderUuid string, paymentMethod model
 		return "", err
 	}
 
-	newOrder := model.OrderDto{
+	newOrder := &model.OrderDto{
 		OrderUUID:       order.OrderUUID,
 		UserUUID:        order.UserUUID,
 		PartUuids:       order.PartUuids,

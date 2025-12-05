@@ -28,6 +28,8 @@ type OrderDto struct {
 	TransactionUUID *string
 	PaymentMethod   *PaymentMethod
 	Status          OrderStatus
+	CreatedAt       time.Time
+	UpdatedAt       *time.Time
 }
 
 type PayParams struct {

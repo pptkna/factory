@@ -1,12 +1,14 @@
 package converter
 
 import (
+	"database/sql"
+
 	"github.com/pptkna/rocket-factory/order/internal/model"
 	repoModel "github.com/pptkna/rocket-factory/order/internal/repository/model"
 	"github.com/samber/lo"
 )
 
-func OrderDtoToRepoModel(orderDto model.OrderDto) *repoModel.OrderDto {
+func OrderDtoToRepoModel(orderDto *model.OrderDto) *repoModel.OrderDto {
 	var transactionUUID *string
 	if orderDto.TransactionUUID != nil {
 		transactionUUID = lo.ToPtr(*orderDto.TransactionUUID)
@@ -17,6 +19,18 @@ func OrderDtoToRepoModel(orderDto model.OrderDto) *repoModel.OrderDto {
 		paymentMethod = lo.ToPtr(PaymentMethodToRepoModel(*orderDto.PaymentMethod))
 	}
 
+	var updatedAt sql.NullTime
+	if orderDto.UpdatedAt != nil {
+		updatedAt = sql.NullTime{
+			Time:  *orderDto.UpdatedAt,
+			Valid: true,
+		}
+	} else {
+		updatedAt = sql.NullTime{
+			Valid: false,
+		}
+	}
+
 	return &repoModel.OrderDto{
 		OrderUUID:       orderDto.OrderUUID,
 		UserUUID:        orderDto.UserUUID,
@@ -25,6 +39,8 @@ func OrderDtoToRepoModel(orderDto model.OrderDto) *repoModel.OrderDto {
 		TransactionUUID: transactionUUID,
 		PaymentMethod:   paymentMethod,
 		Status:          OrderStatusToRepoModel(orderDto.Status),
+		CreatedAt:       orderDto.CreatedAt,
+		UpdatedAt:       updatedAt,
 	}
 }
 

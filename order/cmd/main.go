@@ -32,12 +32,25 @@ const (
 	readHeaderTimeout = 5 * time.Second
 	shutdownTimeout   = 10 * time.Second
 
+	// Services
 	inventoryServerAddress = "localhost:50051"
 	paymentServerAddress   = "localhost:50052"
+
+	// DB
+	host     = "localhost"
+	port     = "5432"
+	user     = "order-service-user"
+	password = "order-service-password"
+	dbname   = "order-service"
+	sslmode  = "disable"
 )
 
 func main() {
-	repository := orderRepository.NewRepository()
+	con, err := orderRepository.NewRepository(host, port, user, password, dbname, sslmode)
+	if err != nil {
+		log.Printf("failed to connect db: %v\n", err)
+		return
+	}
 
 	inventoryConn, err := grpc.NewClient(inventoryServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -69,7 +82,7 @@ func main() {
 
 	paymentClient := paymentClient.NewClient(paymentServerClient)
 
-	service := orderService.NewService(repository, inventoryClient, paymentClient)
+	service := orderService.NewService(con, inventoryClient, paymentClient)
 
 	api := orderApiV1.NewApi(service)
 

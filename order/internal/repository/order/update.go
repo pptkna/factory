@@ -2,21 +2,44 @@ package order
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pptkna/rocket-factory/order/internal/model"
 	repoConverter "github.com/pptkna/rocket-factory/order/internal/repository/converter"
 )
 
-func (r *repository) Update(_ context.Context, orderDto model.OrderDto) error {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+// TODO: Добавить транзакции
+func (r *repository) Update(ctx context.Context, orderDto *model.OrderDto) error {
+	orderDtoRepoModel := repoConverter.OrderDtoToRepoModel(orderDto)
 
-	_, exists := r.orders[orderDto.OrderUUID]
-	if !exists {
-		return model.ErrNotFound
+	query := `
+		UPDATE orders
+		SET user_uuid = $1, part_uuids = $2, total_price = $3, transaction_uuid = $4, payment_method = $5, status = $6, updated_at = $8
+		WHERE order_uuid = $9
+	`
+	result, err := r.db.ExecContext(ctx, query,
+		&orderDtoRepoModel.UserUUID,
+		&orderDtoRepoModel.PartUuids,
+		&orderDtoRepoModel.TotalPrice,
+		&orderDtoRepoModel.TransactionUUID,
+		&orderDtoRepoModel.PaymentMethod,
+		&orderDtoRepoModel.Status,
+		&orderDtoRepoModel.CreatedAt,
+		&orderDtoRepoModel.UpdatedAt,
+		&orderDtoRepoModel.OrderUUID,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to update order status: %w", err)
 	}
 
-	r.orders[orderDto.OrderUUID] = repoConverter.OrderDtoToRepoModel(orderDto)
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get rows affected: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return model.ErrNotFound
+	}
 
 	return nil
 }

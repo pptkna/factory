@@ -1,5 +1,10 @@
 package model
 
+import (
+	"database/sql"
+	"time"
+)
+
 type PaymentMethod string
 
 const (
@@ -26,4 +31,6 @@ type OrderDto struct {
 	TransactionUUID *string
 	PaymentMethod   *PaymentMethod
 	Status          OrderStatus
+	CreatedAt       time.Time
+	UpdatedAt       sql.NullTime
 }

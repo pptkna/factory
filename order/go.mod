@@ -7,6 +7,7 @@ replace github.com/pptkna/rocket-factory/shared => ../shared
 require (
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/google/uuid v1.6.0
+	github.com/lib/pq v1.10.9
 	github.com/pptkna/rocket-factory/shared v0.0.0-00010101000000-000000000000
 	github.com/pressly/goose/v3 v3.24.3
 	github.com/samber/lo v1.52.0
