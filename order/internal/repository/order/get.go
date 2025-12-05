@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/lib/pq"
 	"github.com/pptkna/rocket-factory/order/internal/model"
 	"github.com/samber/lo"
 )
@@ -25,7 +26,16 @@ func (r *repository) Get(ctx context.Context, uuid string) (*model.OrderDto, err
 		FROM orders
 		WHERE order_uuid = $1
 	`
-	err := r.db.QueryRowContext(ctx, orderQuery, uuid).Scan(&orderUUID, &userUUID, &partUuids, &totalPrice, &transactionUUID, &paymentMethod, &status, &createdAt)
+	err := r.db.QueryRowContext(ctx, orderQuery, uuid).Scan(
+		&orderUUID,
+		&userUUID,
+		pq.Array(&partUuids),
+		&totalPrice,
+		&transactionUUID,
+		&paymentMethod,
+		&status,
+		&createdAt,
+	)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, model.ErrNotFound

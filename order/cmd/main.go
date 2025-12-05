@@ -43,10 +43,12 @@ const (
 	password = "order-service-password"
 	dbname   = "order-service"
 	sslmode  = "disable"
+
+	migrations_dir = "migrations"
 )
 
 func main() {
-	con, err := orderRepository.NewRepository(host, port, user, password, dbname, sslmode)
+	con, err := orderRepository.NewRepository(host, port, user, password, dbname, sslmode, migrations_dir)
 	if err != nil {
 		log.Printf("failed to connect db: %v\n", err)
 		return

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/pptkna/rocket-factory/order/internal/migrator"
 	def "github.com/pptkna/rocket-factory/order/internal/repository"
 
 	_ "github.com/lib/pq"
@@ -16,7 +17,7 @@ type repository struct {
 	db *sql.DB
 }
 
-func NewRepository(host, port, user, password, dbname, sslmode string) (*repository, error) {
+func NewRepository(host, port, user, password, dbname, sslmode, migrationsdir string) (*repository, error) {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		host, port, user, password, dbname, sslmode)
 
@@ -36,6 +37,13 @@ func NewRepository(host, port, user, password, dbname, sslmode string) (*reposit
 	}
 
 	fmt.Println("Successfully connected to database")
+
+	migratorRunner := migrator.NewMigrator(db, migrationsdir)
+
+	err = migratorRunner.Up()
+	if err != nil {
+		return nil, fmt.Errorf("db migration error: %w", err)
+	}
 
 	return &repository{db: db}, nil
 }

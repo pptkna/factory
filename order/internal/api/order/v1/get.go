@@ -21,13 +21,13 @@ func (a *api) GetOrderByOrderUuid(ctx context.Context, params orderV1.GetOrderBy
 		}
 		return &orderV1.InternalServerError{
 			Code:    500,
-			Message: "Internal server error",
+			Message: fmt.Sprintf("Internal server error, %v", err),
 		}, nil
 	}
 	if nil == order {
 		return &orderV1.InternalServerError{
-			Code:    500,
-			Message: "Internal server error",
+			Code:    404,
+			Message: fmt.Sprintf("Order with uuid: %s not found", params.OrderUUID.String()),
 		}, nil
 	}
 
@@ -35,7 +35,7 @@ func (a *api) GetOrderByOrderUuid(ctx context.Context, params orderV1.GetOrderBy
 	if err != nil {
 		return &orderV1.InternalServerError{
 			Code:    500,
-			Message: "Internal server error",
+			Message: fmt.Sprintf("Internal server error, %v", err),
 		}, nil
 	}
 
