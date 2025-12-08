@@ -7,6 +7,7 @@ import (
 	"github.com/pptkna/rocket-factory/inventory/internal/converter"
 	"github.com/pptkna/rocket-factory/inventory/internal/model"
 	inventoryV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
+	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -14,7 +15,7 @@ import (
 func (a *api) ListParts(ctx context.Context, req *inventoryV1.ListPartsRequest) (*inventoryV1.ListPartsResponse, error) {
 	filter := req.GetFilter()
 
-	parts, err := a.partService.GetList(ctx, converter.PartsFilterToModel(filter))
+	parts, err := a.partService.GetList(ctx, lo.ToPtr(converter.PartsFilterToModel(filter)))
 	if err != nil {
 		if errors.Is(err, model.ErrNotFound) {
 			return nil, status.Errorf(codes.NotFound, "parts not found")
@@ -24,7 +25,7 @@ func (a *api) ListParts(ctx context.Context, req *inventoryV1.ListPartsRequest) 
 
 	partsProto := make([]*inventoryV1.Part, len(parts))
 	for i, p := range parts {
-		partsProto[i] = converter.PartToProto(p)
+		partsProto[i] = converter.PartToProto(*p)
 	}
 
 	return &inventoryV1.ListPartsResponse{

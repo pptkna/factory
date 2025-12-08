@@ -28,7 +28,7 @@ func (a *api) PostOrderPay(ctx context.Context, req *orderV1.PayOrderRequest, pa
 		}
 		return &orderV1.InternalServerError{
 			Code:    500,
-			Message: "Internal server error",
+			Message: fmt.Sprintf("Internal server error, %v", err),
 		}, nil
 	}
 
@@ -36,7 +36,7 @@ func (a *api) PostOrderPay(ctx context.Context, req *orderV1.PayOrderRequest, pa
 	if err != nil {
 		return &orderV1.InternalServerError{
 			Code:    500,
-			Message: fmt.Sprint("Internal server error: %w", err),
+			Message: fmt.Sprintf("Internal server error, %v", err),
 		}, nil
 	}
 

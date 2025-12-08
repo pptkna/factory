@@ -2,62 +2,56 @@ package part
 
 import (
 	"context"
-	"slices"
+	"fmt"
 
 	"github.com/pptkna/rocket-factory/inventory/internal/model"
 	repoConverter "github.com/pptkna/rocket-factory/inventory/internal/repository/converter"
+	repoModel "github.com/pptkna/rocket-factory/inventory/internal/repository/model"
+	"github.com/samber/lo"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (r *repository) GetList(_ context.Context, filters model.PartFiters) ([]model.Part, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *repository) GetList(ctx context.Context, filters *model.PartFiters) ([]*model.Part, error) {
+	mongoFilter := bson.M{}
 
-	if len(r.parts) == 0 {
-		return []model.Part{}, model.ErrNotFound
+	if filters != nil {
+		if len(filters.Uuids) > 0 {
+			mongoFilter["uuid"] = bson.M{"$in": filters.Uuids}
+		}
+		if len(filters.Categories) > 0 {
+			mongoFilter["category"] = bson.M{"$in": filters.Categories}
+		}
+		if len(filters.ManufacturerCountries) > 0 {
+			mongoFilter["manufacturer.country"] = bson.M{"$in": filters.ManufacturerCountries}
+		}
+		if len(filters.Names) > 0 {
+			mongoFilter["name"] = bson.M{"$in": filters.Names}
+		}
+		if len(filters.Tags) > 0 {
+			// $all проверяет, что массив содержит все указанные элементы
+			mongoFilter["tags"] = bson.M{"$all": filters.Tags}
+		}
 	}
 
-	repoFilters := repoConverter.PartFitersToRepoModel(filters)
+	cursor, err := r.collection.Find(ctx, mongoFilter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch parts: %w", err)
+	}
+	defer cursor.Close(ctx)
 
-	listParts := make([]model.Part, 0, len(r.parts))
-
-	for _, p := range r.parts {
-		if len(repoFilters.Uuids) > 0 && !slices.Contains(repoFilters.Uuids, p.Uuid) {
-			continue
-		}
-
-		if len(repoFilters.Categories) > 0 && !slices.Contains(repoFilters.Categories, p.Category) {
-			continue
-		}
-
-		if len(repoFilters.ManufacturerCountries) > 0 && !slices.Contains(repoFilters.ManufacturerCountries, p.Manufacturer.Country) {
-			continue
-		}
-
-		if len(repoFilters.Names) > 0 && !slices.Contains(repoFilters.Names, p.Name) {
-			continue
-		}
-
-		if len(repoFilters.Tags) > 0 {
-			found := false
-
-			for _, t := range repoFilters.Tags {
-				if slices.Contains(p.Tags, t) {
-					found = true
-					break
-				}
-			}
-
-			if !found {
-				continue
-			}
-		}
-
-		listParts = append(listParts, repoConverter.PartToModel(p))
+	var parts []*repoModel.Part
+	if err := cursor.All(ctx, &parts); err != nil {
+		return nil, fmt.Errorf("failed to decode parts: %w", err)
 	}
 
-	if len(listParts) == 0 {
-		return []model.Part{}, model.ErrNotFound
+	if len(parts) == 0 {
+		return nil, model.ErrNotFound
 	}
 
-	return listParts, nil
+	var result []*model.Part
+	for _, p := range parts {
+		result = append(result, lo.ToPtr(repoConverter.PartToModel(*p)))
+	}
+
+	return result, nil
 }

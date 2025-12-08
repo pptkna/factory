@@ -22,36 +22,35 @@ type PartFiters struct {
 }
 
 type Dimensions struct {
-	Length float32
-	Width  float32
-	Height float32
-	Weight float32
+	Length float32 `bson:"length"`
+	Width  float32 `bson:"width"`
+	Height float32 `bson:"height"`
+	Weight float32 `bson:"weight"`
 }
 
 type Manufacturer struct {
-	Name    string
-	Country string
-	Website string
+	Name    string `bson:"name"`
+	Country string `bson:"country"`
+	Website string `bson:"website"`
 }
-
 type Value struct {
-	String *string
-	Int64  *int64
-	Double *float64
-	Bool   *bool
+	String *string  `bson:"string,omitempty"`
+	Int64  *int64   `bson:"int64,omitempty"`
+	Double *float64 `bson:"double,omitempty"`
+	Bool   *bool    `bson:"bool,omitempty"`
 }
 
 type Part struct {
-	Uuid          string
-	Name          string
-	Description   string
-	Price         float32
-	StockQuantity int
-	Category      Category
-	Dimensions    *Dimensions
-	Manufacturer  *Manufacturer
-	Tags          []string
-	Metadata      map[string]*Value
-	CreatedAt     *time.Time
-	UpdatedAt     *time.Time
+	Uuid          string            `bson:"uuid"`
+	Name          string            `bson:"name"`
+	Description   string            `bson:"description"`
+	Price         float32           `bson:"price"`
+	StockQuantity int               `bson:"stock_quantity"`
+	Category      Category          `bson:"category"`
+	Dimensions    *Dimensions       `bson:"dimensions,omitempty"`
+	Manufacturer  *Manufacturer     `bson:"manufacturer,omitempty"`
+	Tags          []string          `bson:"tags,omitempty"`
+	Metadata      map[string]*Value `bson:"metadata,omitempty"`
+	CreatedAt     *time.Time        `bson:"created_at,omitempty"`
+	UpdatedAt     *time.Time        `bson:"updated_at,omitempty"`
 }

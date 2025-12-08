@@ -7,6 +7,6 @@ import (
 )
 
 type PartService interface {
-	Get(context context.Context, uuid string) (model.Part, error)
-	GetList(context context.Context, filters model.PartFiters) ([]model.Part, error)
+	Get(context context.Context, uuid string) (*model.Part, error)
+	GetList(context context.Context, filters *model.PartFiters) ([]*model.Part, error)
 }

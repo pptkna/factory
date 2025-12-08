@@ -47,3 +47,7 @@ func NewRepository(host, port, user, password, dbname, sslmode, migrationsdir st
 
 	return &repository{db: db}, nil
 }
+
+func (r *repository) Close() error {
+	return r.db.Close()
+}

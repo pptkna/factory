@@ -53,6 +53,7 @@ func main() {
 		log.Printf("failed to connect db: %v\n", err)
 		return
 	}
+	defer con.Close()
 
 	inventoryConn, err := grpc.NewClient(inventoryServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

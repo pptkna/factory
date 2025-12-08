@@ -26,7 +26,7 @@ func (a *api) PostOrderCancel(ctx context.Context, params orderV1.PostOrderCance
 		}
 		return &orderV1.InternalServerError{
 			Code:    500,
-			Message: "Internal server error",
+			Message: fmt.Sprintf("Internal server error, %v", err),
 		}, nil
 	}
 

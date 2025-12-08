@@ -3,7 +3,9 @@ package order
 import (
 	"context"
 	"fmt"
+	"time"
 
+	"github.com/lib/pq"
 	"github.com/pptkna/rocket-factory/order/internal/model"
 	repoConverter "github.com/pptkna/rocket-factory/order/internal/repository/converter"
 )
@@ -14,18 +16,17 @@ func (r *repository) Update(ctx context.Context, orderDto *model.OrderDto) error
 
 	query := `
 		UPDATE orders
-		SET user_uuid = $1, part_uuids = $2, total_price = $3, transaction_uuid = $4, payment_method = $5, status = $6, updated_at = $8
-		WHERE order_uuid = $9
+		SET user_uuid = $1, part_uuids = $2, total_price = $3, transaction_uuid = $4, payment_method = $5, status = $6, updated_at = $7
+		WHERE order_uuid = $8
 	`
 	result, err := r.db.ExecContext(ctx, query,
 		&orderDtoRepoModel.UserUUID,
-		&orderDtoRepoModel.PartUuids,
+		pq.Array(orderDtoRepoModel.PartUuids),
 		&orderDtoRepoModel.TotalPrice,
 		&orderDtoRepoModel.TransactionUUID,
 		&orderDtoRepoModel.PaymentMethod,
 		&orderDtoRepoModel.Status,
-		&orderDtoRepoModel.CreatedAt,
-		&orderDtoRepoModel.UpdatedAt,
+		time.Now(),
 		&orderDtoRepoModel.OrderUUID,
 	)
 	if err != nil {
