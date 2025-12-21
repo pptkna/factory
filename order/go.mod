@@ -4,6 +4,8 @@ go 1.24.9
 
 replace github.com/pptkna/rocket-factory/shared => ../shared
 
+replace github.com/pptkna/rocket-factory/platform => ../platform
+
 require (
 	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.3
