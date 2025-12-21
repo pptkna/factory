@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	partApiV1 "github.com/pptkna/rocket-factory/inventory/internal/api/part/v1"
+	"github.com/pptkna/rocket-factory/inventory/internal/config"
 	partRepository "github.com/pptkna/rocket-factory/inventory/internal/repository/part"
 	partService "github.com/pptkna/rocket-factory/inventory/internal/service/part"
 	inventoryV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
@@ -19,20 +20,17 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const (
-	grpcPort = 50051
-
-	host     = "localhost"
-	port     = "27017"
-	user     = "inventory-service-user"
-	password = "inventory-service-password"
-	dbname   = "inventory-service"
-
-	dbURI = "mongodb://inventory-service-user:inventory-service-password@localhost:27017/inventory-service?authSource=admin"
-)
+const configPath = "./deploy/compose/inventory/.env"
 
 func main() {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	err := config.Load(configPath)
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
+
+	config.Load(configPath)
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", config.AppConfig().InventoryGRPC.Port()))
 	if err != nil {
 		log.Printf("failed to listen: %v\n", err)
 		return
@@ -48,9 +46,7 @@ func main() {
 
 	ctx := context.Background()
 
-	dbURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin", user, password, host, port, dbname)
-
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbURI))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.AppConfig().Mongo.URI()))
 	if err != nil {
 		log.Printf("failed to connect to database: %v\n", err)
 		return
@@ -68,7 +64,7 @@ func main() {
 		return
 	}
 
-	db := client.Database(dbname)
+	db := client.Database(config.AppConfig().Mongo.DatabaseName())
 
 	partRepository, err := partRepository.NewRepository(db)
 	if err != nil {
@@ -86,7 +82,7 @@ func main() {
 	reflection.Register(s)
 
 	go func() {
-		log.Printf("🚀 gRPC server listening on %d\n", grpcPort)
+		log.Printf("🚀 gRPC server listening on %s\n", config.AppConfig().InventoryGRPC.Port())
 		err = s.Serve(lis)
 		if err != nil {
 			log.Printf("failed to serve: %v\n", err)
