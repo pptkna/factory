@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +17,7 @@ import (
 	orderApiV1 "github.com/pptkna/rocket-factory/order/internal/api/order/v1"
 	inventoryClient "github.com/pptkna/rocket-factory/order/internal/client/grpc/inventory/v1"
 	paymentClient "github.com/pptkna/rocket-factory/order/internal/client/grpc/payment/v1"
+	"github.com/pptkna/rocket-factory/order/internal/config"
 	orderRepository "github.com/pptkna/rocket-factory/order/internal/repository/order"
 	orderService "github.com/pptkna/rocket-factory/order/internal/service/order"
 	orderV1 "github.com/pptkna/rocket-factory/shared/pkg/openapi/order/v1"
@@ -26,36 +27,24 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const (
-	httpPort = "8080"
-	// Таймауты для HTTP-сервера
-	readHeaderTimeout = 5 * time.Second
-	shutdownTimeout   = 10 * time.Second
-
-	// Services
-	inventoryServerAddress = "localhost:50051"
-	paymentServerAddress   = "localhost:50052"
-
-	// DB
-	host     = "localhost"
-	port     = "5432"
-	user     = "order-service-user"
-	password = "order-service-password"
-	dbname   = "order-service"
-	sslmode  = "disable"
-
-	migrations_dir = "migrations"
-)
+const configPath = "./deploy/compose/order/.env"
 
 func main() {
-	con, err := orderRepository.NewRepository(host, port, user, password, dbname, sslmode, migrations_dir)
+	err := config.Load(configPath)
+	if err != nil {
+		panic(fmt.Errorf("failed to load config: %w", err))
+	}
+
+	config.Load(configPath)
+
+	con, err := orderRepository.NewRepository(config.AppConfig().Postgres.Address(), config.AppConfig().Postgres.MigrationDirectory())
 	if err != nil {
 		log.Printf("failed to connect db: %v\n", err)
 		return
 	}
 	defer con.Close()
 
-	inventoryConn, err := grpc.NewClient(inventoryServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	inventoryConn, err := grpc.NewClient(config.AppConfig().InventoryGRPC.Address(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("failed to inventory connect: %v\n", err)
 		return
@@ -70,7 +59,7 @@ func main() {
 
 	inventoryClient := inventoryClient.NewClient(inventoryServiceClient)
 
-	paymentConn, err := grpc.NewClient(paymentServerAddress, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	paymentConn, err := grpc.NewClient(config.AppConfig().PaymentGRPC.Address(), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Printf("failed to payment connect: %v\n", err)
 		return
@@ -103,9 +92,9 @@ func main() {
 	r.Mount("/", orderServer)
 
 	server := &http.Server{
-		Addr:              net.JoinHostPort("localhost", httpPort),
+		Addr:              config.AppConfig().OrderApi.Address(),
 		Handler:           r,
-		ReadHeaderTimeout: readHeaderTimeout,
+		ReadHeaderTimeout: config.AppConfig().OrderApi.ReadTimeout(),
 		// Защита от Slowloris атак - тип DDoS-атаки, при которой
 		// атакующий умышленно медленно отправляет HTTP-заголовки, удерживая соединения открытыми и истощая
 		// пул доступных соединений на сервере. ReadHeaderTimeout принудительно закрывает соединение,
@@ -113,7 +102,7 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("🚀 HTTP-сервер запущен на порту %s\n", httpPort)
+		log.Printf("🚀 HTTP-сервер запущен на порту и адресе %s\n", config.AppConfig().OrderApi.Address())
 		err := server.ListenAndServe()
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Printf("❌ Ошибка запуска сервера: %v\n", err)
@@ -127,7 +116,7 @@ func main() {
 
 	log.Println("🛑 Завершение работы сервера...")
 
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().OrderApi.ShutDownTimeout())
 	defer cancel()
 
 	err = server.Shutdown(ctx)

@@ -5,8 +5,10 @@ go 1.24.9
 replace github.com/pptkna/rocket-factory/shared => ../shared
 
 require (
+	github.com/caarlos0/env/v11 v11.3.1
 	github.com/go-chi/chi/v5 v5.2.3
 	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/pptkna/rocket-factory/shared v0.0.0-00010101000000-000000000000
 	github.com/pressly/goose/v3 v3.24.3
