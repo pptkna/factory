@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pptkna/factory/platform/pkg/logger"
+	"github.com/pptkna/rocket-factory/platform/pkg/logger"
 	"go.uber.org/zap"
 )
 
