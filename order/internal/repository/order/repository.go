@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/pptkna/rocket-factory/order/internal/migrator"
 	def "github.com/pptkna/rocket-factory/order/internal/repository"
+	"github.com/pptkna/rocket-factory/platform/pkg/migrator"
 
 	_ "github.com/lib/pq"
 )
@@ -23,17 +23,15 @@ func NewRepository(dsn, migrationsdir string) (*repository, error) {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
 
-	// Настройка пула соединений
-	db.SetMaxOpenConns(25)                 // Максимальное количество открытых соединений
-	db.SetMaxIdleConns(5)                  // Максимальное количество неактивных соединений
-	db.SetConnMaxLifetime(5 * time.Minute) // Максимальное время жизни соединения
+	// Setting up a connection pool
+	db.SetMaxOpenConns(25)                 // Maximum number of open connections
+	db.SetMaxIdleConns(5)                  // Maximum number of inactive connections
+	db.SetConnMaxLifetime(5 * time.Minute) // Maximum connection lifetime
 
-	// Проверка подключения
+	// Checking the connection
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
-
-	fmt.Println("Successfully connected to database")
 
 	migratorRunner := migrator.NewMigrator(db, migrationsdir)
 
