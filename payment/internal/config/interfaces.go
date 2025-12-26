@@ -7,4 +7,5 @@ type LoggerConfig interface {
 
 type PaymentGRPCConfig interface {
 	Port() string
+	Address() string
 }

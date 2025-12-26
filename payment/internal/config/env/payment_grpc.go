@@ -1,6 +1,8 @@
 package env
 
 import (
+	"net"
+
 	"github.com/caarlos0/env/v11"
 )
 
@@ -26,4 +28,8 @@ func NewPaymentGRPCConfig() (*paymentGRPCConfig, error) {
 
 func (cfg *paymentGRPCConfig) Port() string {
 	return cfg.raw.Port
+}
+
+func (cfg *paymentGRPCConfig) Address() string {
+	return net.JoinHostPort(cfg.raw.Host, cfg.Port())
 }
