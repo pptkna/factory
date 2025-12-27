@@ -10,21 +10,21 @@ import (
 )
 
 type diContainer struct {
-	paymentV1Api paymentV1.PaymentServiceServer
+	paymentV1API paymentV1.PaymentServiceServer
 
 	paymentService service.PaymentService
 }
 
-func newDiContainer() *diContainer {
+func newDIContainer() *diContainer {
 	return &diContainer{}
 }
 
-func (d *diContainer) PaymentV1Api(ctx context.Context) paymentV1.PaymentServiceServer {
-	if d.paymentV1Api == nil {
-		d.paymentV1Api = v1.NewAPI(d.PaymentService(ctx))
+func (d *diContainer) PaymentV1API(ctx context.Context) paymentV1.PaymentServiceServer {
+	if d.paymentV1API == nil {
+		d.paymentV1API = v1.NewAPI(d.PaymentService(ctx))
 	}
 
-	return d.paymentV1Api
+	return d.paymentV1API
 }
 
 func (d *diContainer) PaymentService(_ context.Context) service.PaymentService {

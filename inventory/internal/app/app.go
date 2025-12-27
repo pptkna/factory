@@ -5,11 +5,11 @@ import (
 	"errors"
 	"net"
 
-	"github.com/pptkna/rocket-factory/payment/internal/config"
+	"github.com/pptkna/rocket-factory/inventory/internal/config"
 	"github.com/pptkna/rocket-factory/platform/pkg/closer"
 	"github.com/pptkna/rocket-factory/platform/pkg/grpc/health"
 	"github.com/pptkna/rocket-factory/platform/pkg/logger"
-	paymentV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/payment/v1"
+	inventoryV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -72,7 +72,7 @@ func (a *app) initCloser(_ context.Context) error {
 }
 
 func (a *app) initListener(_ context.Context) error {
-	listener, err := net.Listen("tcp", config.AppConfig().PaymentGRPC.Address())
+	listener, err := net.Listen("tcp", config.AppConfig().InventoryGRPC.Address())
 	if err != nil {
 		return err
 	}
@@ -99,16 +99,15 @@ func (a *app) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	// Register health service for check availability
 	health.RegisterService(a.grpcServer)
 
-	paymentV1.RegisterPaymentServiceServer(a.grpcServer, a.diContainer.PaymentV1API(ctx))
+	inventoryV1.RegisterInventoryServiceServer(a.grpcServer, a.diContainer.InventoryV1API(ctx))
 
 	return nil
 }
 
 func (a *app) runGRPCServer(ctx context.Context) error {
-	logger.Info(ctx, "gRPC PaymentService server listening:", zap.String("address", config.AppConfig().PaymentGRPC.Address()))
+	logger.Info(ctx, "gRPC PaymentService server listening:", zap.String("address", config.AppConfig().InventoryGRPC.Address()))
 
 	err := a.grpcServer.Serve(a.listener)
 	if err != nil {
