@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lib/pq"
 	"github.com/pptkna/rocket-factory/order/internal/model"
 	repoConverter "github.com/pptkna/rocket-factory/order/internal/repository/converter"
 )
@@ -19,7 +20,7 @@ func (r *repository) Create(ctx context.Context, orderDto *model.OrderDto) error
 		query,
 		repoOrderDto.OrderUUID,
 		repoOrderDto.UserUUID,
-		repoOrderDto.PartUuids,
+		pq.Array(repoOrderDto.PartUuids),
 		repoOrderDto.TotalPrice,
 		repoOrderDto.Status,
 		repoOrderDto.CreatedAt,

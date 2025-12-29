@@ -2,29 +2,16 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
-	"net/http"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-
-	orderApiV1 "github.com/pptkna/rocket-factory/order/internal/api/order/v1"
-	inventoryClient "github.com/pptkna/rocket-factory/order/internal/client/grpc/inventory/v1"
-	paymentClient "github.com/pptkna/rocket-factory/order/internal/client/grpc/payment/v1"
+	"github.com/pptkna/rocket-factory/order/internal/app"
 	"github.com/pptkna/rocket-factory/order/internal/config"
-	orderRepository "github.com/pptkna/rocket-factory/order/internal/repository/order"
-	orderService "github.com/pptkna/rocket-factory/order/internal/service/order"
-	orderV1 "github.com/pptkna/rocket-factory/shared/pkg/openapi/order/v1"
-	inventoryV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1"
-	paymentV1 "github.com/pptkna/rocket-factory/shared/pkg/proto/payment/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
+	"github.com/pptkna/rocket-factory/platform/pkg/closer"
+	"github.com/pptkna/rocket-factory/platform/pkg/logger"
+	"go.uber.org/zap"
 )
 
 const configPath = "./deploy/compose/order/.env"
@@ -37,92 +24,30 @@ func main() {
 
 	config.Load(configPath)
 
-	con, err := orderRepository.NewRepository(config.AppConfig().Postgres.Address(), config.AppConfig().Postgres.MigrationDirectory())
+	appCtx, appCancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer appCancel()
+	defer gracefulShutdown()
+
+	closer.Configure(syscall.SIGINT, syscall.SIGTERM)
+
+	a, err := app.New(appCtx)
 	if err != nil {
-		log.Printf("failed to connect db: %v\n", err)
+		logger.Error(appCtx, "failed to create new app", zap.Error(err))
 		return
 	}
-	defer con.Close()
 
-	inventoryConn, err := grpc.NewClient(config.AppConfig().InventoryGRPC.Address(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	err = a.Run(appCtx)
 	if err != nil {
-		log.Printf("failed to inventory connect: %v\n", err)
+		logger.Error(appCtx, "failed to start app", zap.Error(err))
 		return
 	}
-	defer func() {
-		if cerr := inventoryConn.Close(); cerr != nil {
-			log.Printf("failed to close inventory connect: %v", cerr)
-		}
-	}()
+}
 
-	inventoryServiceClient := inventoryV1.NewInventoryServiceClient(inventoryConn)
-
-	inventoryClient := inventoryClient.NewClient(inventoryServiceClient)
-
-	paymentConn, err := grpc.NewClient(config.AppConfig().PaymentGRPC.Address(), grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		log.Printf("failed to payment connect: %v\n", err)
-		return
-	}
-	defer func() {
-		if cerr := paymentConn.Close(); cerr != nil {
-			log.Printf("failed to close payment connect: %v", cerr)
-		}
-	}()
-
-	paymentServerClient := paymentV1.NewPaymentServiceClient(paymentConn)
-
-	paymentClient := paymentClient.NewClient(paymentServerClient)
-
-	service := orderService.NewService(con, inventoryClient, paymentClient)
-
-	api := orderApiV1.NewApi(service)
-
-	orderServer, err := orderV1.NewServer(api)
-	if err != nil {
-		log.Fatalf("ошибка создания сервера OpenAPI: %v", err)
-	}
-
-	r := chi.NewRouter()
-
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(10 * time.Second))
-
-	r.Mount("/", orderServer)
-
-	server := &http.Server{
-		Addr:              config.AppConfig().OrderApi.Address(),
-		Handler:           r,
-		ReadHeaderTimeout: config.AppConfig().OrderApi.ReadTimeout(),
-		// Защита от Slowloris атак - тип DDoS-атаки, при которой
-		// атакующий умышленно медленно отправляет HTTP-заголовки, удерживая соединения открытыми и истощая
-		// пул доступных соединений на сервере. ReadHeaderTimeout принудительно закрывает соединение,
-		// если клиент не успел отправить все заголовки за отведенное время.
-	}
-
-	go func() {
-		log.Printf("🚀 HTTP-сервер запущен на порту и адресе %s\n", config.AppConfig().OrderApi.Address())
-		err := server.ListenAndServe()
-		if err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Printf("❌ Ошибка запуска сервера: %v\n", err)
-		}
-	}()
-
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-
-	log.Println("🛑 Завершение работы сервера...")
-
-	ctx, cancel := context.WithTimeout(context.Background(), config.AppConfig().OrderApi.ShutDownTimeout())
+func gracefulShutdown() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err = server.Shutdown(ctx)
-	if err != nil {
-		log.Printf("❌ Ошибка при остановке сервера: %v\n", err)
+	if err := closer.CloseAll(ctx); err != nil {
+		logger.Error(ctx, "failed to gracefull shutdown", zap.Error(err))
 	}
-
-	log.Println("✅ Сервер остановлен")
 }
