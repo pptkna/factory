@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package events.v1;
+
+option go_package = "github.com/pptkna/rocket-factory/shared/pkg/proto/inventory/v1;order_events_v1";
+
+// Способы оплаты
+enum PaymentMethod {
+    // Не указан способ оплаты (значение по умолчанию)
+    PAYMENT_METHOD_UNSPECIFIED = 0;
+
+    // Неизвестный способ оплаты
+    PAYMENT_METHOD_UNKNOWN = 1;
+
+    // Банковская карта
+    PAYMENT_METHOD_CARD = 2;
+
+    // Система быстрых платежей
+    PAYMENT_METHOD_SBP = 3;
+
+    // Кредитная карта
+    PAYMENT_METHOD_CREDIT_CARD = 4;
+
+    // Деньги инвестора (внутренний метод)
+    PAYMENT_METHOD_INVESTOR_MONEY = 5;
+}
+
+// Входящее событие: OrderPaid (Kafka)
+message OrderPaid {
+    // Уникальный идентификатор события (для идемпотентности)
+    string event_uuid = 1;
+
+    // Идентификатор оплаченного заказа
+    string order_uuid = 2;
+
+    // Идентификатор пользователя
+    string user_uuid = 3;
+
+    // Способ оплаты
+    PaymentMethod payment_method = 4;
+
+    // Идентификатор транзакции, сгенерированный в результате оплаты
+    string transaction_uuid = 5;
+}
+
+// Входящее событие: OrderAssembled (Kafka)
+message OrderAssembled {
+    // Уникальный идентификатор события (для идемпотентности)
+    string event_uuid = 1;
+
+    // Идентификатор собранного заказа
+    string order_uuid = 2;
+
+    // Идентификатор пользователя
+    string user_uuid = 3;
+
+    // Время (в секундах), потраченное на сборку
+    int64 build_time_sec = 4;
+}
