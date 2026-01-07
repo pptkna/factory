@@ -24,7 +24,7 @@ func NewService(orderAssembledProducer kafka.Producer) *service {
 	}
 }
 
-func (p *service) ProduceOrderAssembled(ctx context.Context, event model.OrderAssembledEvent) error {
+func (s *service) ProduceOrderAssembled(ctx context.Context, event *model.OrderAssembledEvent) error {
 	msg := &orderEventsV1.OrderAssembled{
 		EventUuid:    event.EventUUID,
 		OrderUuid:    event.OrderUUID,
@@ -38,7 +38,7 @@ func (p *service) ProduceOrderAssembled(ctx context.Context, event model.OrderAs
 		return err
 	}
 
-	err = p.orderAssembledProducer.Send(ctx, []byte(event.EventUUID), payload)
+	err = s.orderAssembledProducer.Send(ctx, []byte(event.EventUUID), payload)
 	if err != nil {
 		logger.Error(ctx, "failed to publish OrderAssembled", zap.Error(err))
 		return err
