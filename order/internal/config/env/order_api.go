@@ -11,7 +11,7 @@ type orderApiEnvConfig struct {
 	Host            string        `env:"HTTP_HOST,required"`
 	Port            string        `env:"HTTP_PORT,required"`
 	HTTPReadTimeout time.Duration `env:"HTTP_READ_TIMEOUT,required"`
-	ShutDownTimeout time.Duration `env:"ORDER_SHUT_DOWN_TIMEOUT,required"`
+	ShutDownTimeout time.Duration `env:"SHUT_DOWN_TIMEOUT,required"`
 }
 
 type orderApiConfig struct {

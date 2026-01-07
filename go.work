@@ -1,9 +1,10 @@
 go 1.24.9
 
 use (
+	./assembly
 	./inventory
 	./order
-    ./payment
-    ./platform
+	./payment
+	./platform
 	./shared
 )
