@@ -22,8 +22,6 @@ func main() {
 		panic(fmt.Errorf("failed to load config: %w", err))
 	}
 
-	config.Load(configPath)
-
 	appCtx, appCancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer appCancel()
 	defer gracefulShutdown()
