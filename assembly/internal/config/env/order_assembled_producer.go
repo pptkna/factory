@@ -1,9 +1,12 @@
 package env
 
-import "github.com/caarlos0/env/v11"
+import (
+	"github.com/IBM/sarama"
+	"github.com/caarlos0/env/v11"
+)
 
 type orderAssembledProducerEnvConfig struct {
-	topicName string `env:"ORDER_ASSEMBLED_TOPIC_NAME,required"`
+	TopicName string `env:"ORDER_ASSEMBLED_TOPIC_NAME,required"`
 }
 
 type orderAssembledProducerConfig struct {
@@ -20,5 +23,13 @@ func NewOrderAssembledProducerConfig() (*orderAssembledProducerConfig, error) {
 }
 
 func (cfg *orderAssembledProducerConfig) TopicName() string {
-	return cfg.raw.topicName
+	return cfg.raw.TopicName
+}
+
+func (cfg *orderAssembledProducerConfig) Config() *sarama.Config {
+	config := sarama.NewConfig()
+	config.Version = sarama.V4_0_0_0
+	config.Producer.Return.Successes = true
+
+	return config
 }

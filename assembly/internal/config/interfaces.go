@@ -1,19 +1,23 @@
 package config
 
+import "github.com/IBM/sarama"
+
 type LoggerConfig interface {
 	Level() string
 	AsJson() bool
 }
 
 type KafkaConfig interface {
-	Brokers() string
+	Brokers() []string
 }
 
 type OrderAssembledProducerConfig interface {
 	TopicName() string
+	Config() *sarama.Config
 }
 
 type OrderPaidConsumerConfig interface {
 	TopicName() string
 	ConsumerGroupID() string
+	Config() *sarama.Config
 }

@@ -3,7 +3,7 @@ package env
 import "github.com/caarlos0/env/v11"
 
 type kafkaEnvConfig struct {
-	brokers string `env:"KAFKA_BROKERS,required"`
+	Brokers []string `env:"KAFKA_BROKERS,required"`
 }
 
 type kafkaConfig struct {
@@ -19,6 +19,6 @@ func NewKafkaConfig() (*kafkaConfig, error) {
 	return &kafkaConfig{raw: raw}, nil
 }
 
-func (cfg *kafkaConfig) Brokers() string {
-	return cfg.raw.brokers
+func (cfg *kafkaConfig) Brokers() []string {
+	return cfg.raw.Brokers
 }

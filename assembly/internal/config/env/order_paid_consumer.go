@@ -1,10 +1,13 @@
 package env
 
-import "github.com/caarlos0/env/v11"
+import (
+	"github.com/IBM/sarama"
+	"github.com/caarlos0/env/v11"
+)
 
 type orderPaidConsumerEnvConfig struct {
-	topicName       string `env:"ORDER_PAID_TOPIC_NAME,required"`
-	consumerGroupID string `env:"ORDER_PAID_CONSUMER_GROUP_ID,required"`
+	TopicName       string `env:"ORDER_PAID_TOPIC_NAME,required"`
+	ConsumerGroupID string `env:"ORDER_PAID_CONSUMER_GROUP_ID,required"`
 }
 
 type orderPaidConsumerConfig struct {
@@ -21,9 +24,18 @@ func NewOrderPaidConsumerConfig() (*orderPaidConsumerConfig, error) {
 }
 
 func (cfg *orderPaidConsumerConfig) TopicName() string {
-	return cfg.raw.topicName
+	return cfg.raw.TopicName
 }
 
 func (cfg *orderPaidConsumerConfig) ConsumerGroupID() string {
-	return cfg.raw.consumerGroupID
+	return cfg.raw.ConsumerGroupID
+}
+
+func (cfg *orderPaidConsumerConfig) Config() *sarama.Config {
+	config := sarama.NewConfig()
+	config.Version = sarama.V4_0_0_0
+	config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
+
+	return config
 }
