@@ -55,6 +55,8 @@ func OrderStatusToModel(status orderV1.OrderStatus) model.OrderStatus {
 		return model.OrderStatusPendingPayment
 	case orderV1.OrderStatusPAID:
 		return model.OrderStatusPaid
+	case orderV1.OrderStatusASSEMBLED:
+		return model.OrderStatusAssembled
 	default:
 		return model.OrderStatusCancelled
 	}
@@ -138,6 +140,8 @@ func OrderStatusToOrderV1(status model.OrderStatus) orderV1.OrderStatus {
 		return orderV1.OrderStatusPENDINGPAYMENT
 	case model.OrderStatusPaid:
 		return orderV1.OrderStatusPAID
+	case model.OrderStatusAssembled:
+		return orderV1.OrderStatusASSEMBLED
 	default:
 		return orderV1.OrderStatusCANCELLED
 	}

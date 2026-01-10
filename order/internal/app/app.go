@@ -33,7 +33,40 @@ func New(ctx context.Context) (*app, error) {
 }
 
 func (a *app) Run(ctx context.Context) error {
-	return a.runHTTPServer(ctx)
+	// Канал для ошибок
+	errCh := make(chan error)
+
+	// Контекст для остановки всех горутин
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Консьюмер
+	go func() {
+		if err := a.runConsumer(ctx); err != nil {
+			errCh <- fmt.Errorf("consumer crashed: %v", err.Error())
+		}
+	}()
+
+	// HTTPServer
+	go func() {
+		if err := a.runHTTPServer(ctx); err != nil {
+			errCh <- fmt.Errorf("HTTPServer crashed: %v", err.Error())
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Info(ctx, "Shutdown signal received")
+	case err := <-errCh:
+		logger.Error(ctx, "Component crashed, shutting down", zap.Error(err))
+		// Триггерим cancel, чтобы остановить второй компонент
+		cancel()
+		// Дождись завершения всех задач (если есть graceful shutdown внутри)
+		<-ctx.Done()
+		return err
+	}
+
+	return nil
 }
 
 func (a *app) initDeps(ctx context.Context) error {
@@ -117,6 +150,17 @@ func (a *app) runHTTPServer(ctx context.Context) error {
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Error(ctx, "HTTP server crashed", zap.Error(err))
 
+		return err
+	}
+
+	return nil
+}
+
+func (a *app) runConsumer(ctx context.Context) error {
+	logger.Info(ctx, "OrderPaid Kafka consumer running")
+
+	err := a.diContainer.OrderAssembledConsumerService(ctx).RunConsumer(ctx)
+	if err != nil {
 		return err
 	}
 

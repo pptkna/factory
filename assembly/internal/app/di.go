@@ -23,13 +23,13 @@ type diContainer struct {
 	orderPaidConsumerService      service.OrderPaidConsumerService
 	orderAssembledProducerService service.OrderAssembledProducerService
 
-	consumerGroup sarama.ConsumerGroup
-
-	syncProducer           sarama.SyncProducer
-	orderAssembledProducer wrappedKafka.Producer
+	orderPaidConsumerGroup sarama.ConsumerGroup
 
 	orderPaidDecoder  kafkaConverter.OrderPaidDecoder
 	orderPaidConsumer wrappedKafka.Consumer
+
+	syncProducer           sarama.SyncProducer
+	orderAssembledProducer wrappedKafka.Producer
 }
 
 func NewDiContainer() *diContainer {
@@ -52,32 +52,30 @@ func (d *diContainer) OrderAssembledProducerService() service.OrderAssembledProd
 	return d.orderAssembledProducerService
 }
 
-func (d *diContainer) ConsumerGroup() sarama.ConsumerGroup {
-	if d.consumerGroup == nil {
+func (d *diContainer) OrderPaidConsumerGroup() sarama.ConsumerGroup {
+	if d.orderPaidConsumerGroup == nil {
 		c, err := sarama.NewConsumerGroup(
 			config.AppConfig().Kafka.Brokers(),
 			config.AppConfig().OrderPaidConsumer.ConsumerGroupID(),
-			// TODO заменить OrderPaidConsumer на consumer
 			config.AppConfig().OrderPaidConsumer.Config(),
 		)
 		if err != nil {
 			panic(fmt.Sprintf("failed to create consumer group: %s\n", err.Error()))
 		}
 		closer.AddNamed("Kafka consumer group", func(ctx context.Context) error {
-			return d.consumerGroup.Close()
+			return d.orderPaidConsumerGroup.Close()
 		})
 
-		d.consumerGroup = c
+		d.orderPaidConsumerGroup = c
 	}
 
-	return d.consumerGroup
+	return d.orderPaidConsumerGroup
 }
 
 func (d *diContainer) SyncProducer() sarama.SyncProducer {
 	if d.syncProducer == nil {
 		p, err := sarama.NewSyncProducer(
 			config.AppConfig().Kafka.Brokers(),
-			// TODO заменить OrderAssembledProducer на producer
 			config.AppConfig().OrderAssembledProducer.Config(),
 		)
 		if err != nil {
@@ -116,7 +114,7 @@ func (d *diContainer) OrderPaidDecoder() kafkaConverter.OrderPaidDecoder {
 func (d *diContainer) OrderPaidConsumer() wrappedKafka.Consumer {
 	if d.orderPaidConsumer == nil {
 		d.orderPaidConsumer = wrappedKafkaConsumer.NewConsumer(
-			d.ConsumerGroup(),
+			d.OrderPaidConsumerGroup(),
 			[]string{
 				config.AppConfig().OrderPaidConsumer.TopicName(),
 			},

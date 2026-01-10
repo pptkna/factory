@@ -2,8 +2,8 @@ package app
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/go-faster/errors"
 	"github.com/pptkna/rocket-factory/assembly/internal/config"
 	"github.com/pptkna/rocket-factory/platform/pkg/closer"
 	"github.com/pptkna/rocket-factory/platform/pkg/logger"
@@ -36,7 +36,7 @@ func (a *app) Run(ctx context.Context) error {
 	// Консьюмер
 	go func() {
 		if err := a.runConsumer(ctx); err != nil {
-			errCh <- errors.Errorf("consumer crashed: %v", err.Error())
+			errCh <- fmt.Errorf("consumer crashed: %v", err.Error())
 		}
 	}()
 

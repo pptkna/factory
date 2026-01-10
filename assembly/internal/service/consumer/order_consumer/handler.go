@@ -2,6 +2,7 @@ package order_consumer
 
 import (
 	"context"
+	"math/rand"
 	"time"
 
 	"github.com/pptkna/rocket-factory/assembly/internal/model"
@@ -17,20 +18,41 @@ func (s *service) OrderHandler(ctx context.Context, msg kafka.Message) error {
 		return err
 	}
 
-	start := time.Now()
+	logger.Info(ctx, "Processing message",
+		zap.String("topic", msg.Topic),
+		zap.Int32("partition", msg.Partition),
+		zap.Int64("offset", msg.Offset),
+		zap.String("order_uuid", orderPaidEvent.OrderUUID),
+		zap.String("event_uuid", orderPaidEvent.EventUUID),
+		zap.String("payment_method", string(orderPaidEvent.PaymentMethod)),
+		zap.String("transaction_uuid", orderPaidEvent.TransactionUUID),
+	)
 
-	time.Sleep(10 * time.Second)
-
-	buildTimeSec := int64(time.Since(start).Seconds())
+	//nolint:gosec
+	delay := time.Duration(rand.Intn(10)+1) * time.Second
+	select {
+	case <-time.After(delay):
+	case <-ctx.Done():
+		return ctx.Err()
+	}
 
 	orderAssembledEvent := &model.OrderAssembledEvent{
 		EventUUID:    orderPaidEvent.EventUUID,
 		OrderUUID:    orderPaidEvent.OrderUUID,
 		UserUUID:     orderPaidEvent.UserUUID,
-		BuildTimeSec: buildTimeSec,
+		BuildTimeSec: int64(delay / time.Second),
 	}
 
-	s.orderAssembledProducer.ProduceOrderAssembled(ctx, orderAssembledEvent)
+	err = s.orderAssembledProducer.ProduceOrderAssembled(ctx, orderAssembledEvent)
+	if err != nil {
+		logger.Error(ctx, "Failed to produce ship assembled event",
+			zap.String("event_uuid", orderAssembledEvent.EventUUID),
+			zap.String("order_uuid", orderAssembledEvent.OrderUUID),
+			zap.Int64("build_time_sec", orderAssembledEvent.BuildTimeSec),
+			zap.Error(err),
+		)
+		return err
+	}
 
 	return nil
 }
